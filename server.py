@@ -21,7 +21,7 @@ load_dotenv()
 
 ####################################### 배포 시 주석 풀 것
 """ 본인 OpenAI API Key 삽입 """
-openai.api_key = json.loads(get_secret()).get("OPENAI_API_KEY") # os.getenv('OPENAI_API_KEY')
+openai.api_key = os.getenv('OPENAI_API_KEY') #json.loads(get_secret()).get("OPENAI_API_KEY")
 # C:\Users\komj\Desktop\Afore\afore\Lib\site-packages\openai\__init__.py
 
 
