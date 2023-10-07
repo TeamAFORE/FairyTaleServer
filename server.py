@@ -251,6 +251,12 @@ def receive_game_result():
 
     return json.dumps({"game_result": game_result}, ensure_ascii=False)  # echo
 
+# 최종 게임 결과 echo
+@app.route('/fairy-tale/final/game', methods=['GET'])
+def send_game_result():
+    return json.dumps({"game_result": final_game}, ensure_ascii=False)
+
+
 # 최종 스토리 요약 생성
 @app.route('/fairy-tale/final/story', methods=['GET'])
 def create_user_story():
