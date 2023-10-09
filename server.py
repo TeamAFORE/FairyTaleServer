@@ -319,4 +319,3 @@ def dialoguesImage():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False) #), host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True) # 임시로 개발/디버깅 용 웹 서버 werkzeug를 사용하도록 했지만, 추후 배포 시 Gunicorn 또는 uWSGI 사용할 것
 
-
