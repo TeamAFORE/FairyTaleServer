@@ -104,7 +104,7 @@ def run_conversation(agents: List[GenerativeAgent], initial_observation: str) ->
     public.append(observation + "\n")
     print(observation)
     turns = 0
-    for i in range(2): # 대화 횟수 조정
+    for i in range(5): # 대화 횟수 조정
         break_dialogue = False
         for agent in agents:
             stay_in_dialogue, observation = agent.generate_dialogue_response(observation)

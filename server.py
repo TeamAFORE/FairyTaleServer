@@ -117,9 +117,9 @@ def interview_npc():
     for p in public:
         content += p
 
-    content += "I want to summarize this conversation in detail in 15 lines. Can you summarize it in Korean? Write : 'what to say'"
+    content += "I want to summarize this conversation in detail within 1000 tokens. Can you summarize it in Korean? Write : 'what to say'"
     print(content)
-        # chatgpt에 마지막에 '지금까지의 대화를 10줄 이상으로...' 추가해서 role, content 구성해서 요청하기
+        # chatgpt에 마지막에 '지금까지의 대화를 1000토큰 이내로...' 추가해서 role, content 구성해서 요청하기
     completion = create_gpt_saying([{"role": "user", "content": content}])
     answer = completion["choices"][0]["message"]["content"].strip()
     public_dialogues_summary.append(answer)
@@ -260,7 +260,7 @@ def send_game_result():
 # 최종 스토리 요약 생성
 @app.route('/fairy-tale/final/story', methods=['GET'])
 def create_user_story():
-    global user2npc_summary, pursuaded, final_game, public_dialogues_summary, story
+    global user2npc_summary, pursuaded, final_game, public_dialogues_summary, story, public, public_dialogues, messages, npcs, memories, observations
     msgs = ""
     npc_pursuaded = ""
 
@@ -296,8 +296,27 @@ def create_user_story():
     completion = create_gpt_saying([{"role": "user", "content" : msgs}])
     content = completion["choices"][0]["message"]["content"].strip()
     story = content
+    result = final_game
+
+    # 전역 변수 초기화
     
-    return json.dumps({"content": content}, ensure_ascii=False)
+    public_dialogues = [""]
+    public = [""]
+    public_dialogues_summary = []
+    messages = [
+    {"role": "system", "content": "You're a helpful assistant."},
+    {"role": "user", "content": "I want chatgpt to make his own decisions based on the context and make a story."},
+    {"role": "assistant", "content": "I will no longer provide specific dialogue guidelines, so please allow ChatGPT to proceed freely. This will allow ChatGPT to leverage the context given to create creative conversations. From now on, I will not limit my response and let ChatGPT continue the conversation freely."},
+    ]
+
+    pursuaded = [ False, False, False ] # 쥐, 삵, 곰
+    user2npc_summary = ["", "", ""]
+    npcs = []
+    memories = []
+    observations = []
+    final_game = True
+    story = ""
+    return json.dumps({"content": content, "game_result": result}, ensure_ascii=False)
 
 
 # NPC

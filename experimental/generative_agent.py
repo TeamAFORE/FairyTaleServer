@@ -164,7 +164,7 @@ Relevant context:
         call_to_action_template = (
                 "Should {agent_name} react to the observation, and if so,"  # NPC가 반응해야 하는가?
                 + " what would be an appropriate reaction? Respond in one line."  # 그렇다면 어떤 것이 적절한 반응인가? 한 줄로 대답하라
-                + ' It should only respond through conversation, write:\nSAY: "what to say"'  # 반응으로써 대화하는 경우 SAY : ~ 형식으로 답하라
+                + ' It should only respond through conversation, write in Korean:\nSAY: "what to say"'  # 반응으로써 대화하는 경우 SAY : ~ 형식으로 답하라
                 # @고민정 : 게임에서는 대화만 필요.
                 #+ "\notherwise, write:\nREACT: reaction (if anything)."  # 대화에 참여하지 않고 반응만 하는 경우 REACT : ~ 형식으로 답하라
                 #+ "\nEither react, or say something but not both.\n\n"  #  반응 / 대화 중 하나만 선택 가능
@@ -199,7 +199,7 @@ Relevant context:
         call_to_action_template = (
             "What would {agent_name} say? To end the conversation, write:"
             ' GOODBYE: "what to say". Otherwise to continue the conversation,'
-            ' write: SAY: "what to say next"\n\n'
+            ' write in Korean: SAY: "what to say next"\n\n'
         )
         full_result = self._generate_reaction(
             observation, call_to_action_template, now=now
