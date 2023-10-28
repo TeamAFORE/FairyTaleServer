@@ -87,21 +87,22 @@ def interview_npc():
     npcs, observations = _set_interview(npc_name, npcs, pursuade)
 
 
+    """
     # 매 관찰마다 시스템이 생성하는 요약문을 확인, 요약문 발전 감시(for 성능 평가 및 개선)
     print("-------------------- 각 NPC의 성격과 상황 --------------------")
     for o in range(len(observations)):
         for i, observation in enumerate(observations[o]):
-            _, reaction = npcs[o].generate_reaction(observation)  # bool, str
+            _, reaction = npcs[o].generate_dialogues_response(observation)  # bool, str
             print(colored(observation, "green"), reaction)
-            npcs[o].get_summary(force_refresh=True)
+            #npcs[o].get_summary(force_refresh=True)
             #print(colored( f"After {i + 1} observations, {npcs[o].name}'s summary is:\n{npcs[o].get_summary(force_refresh=True)}", "blue",))
-            
+    """ 
 
     # NPC간 대화
     print("-------------------- NPC 간의 대화 --------------------")
     
-    if pursuade : pin2 = f"안녕? 늑대가 빨간 망토 할머니를 잡아먹으려고 했다는 소문을 들었어? 빨간 망토가 너무 화가 나서 복수를 하러 간대. 그런데 빨간 망토가 같이 가자고 설득하니까 {npc_name}도 복수해주겠다고 했대. {npc_name}이 함께 하는 것에 대해 너는 어떻게 생각해? 우리 이야기해보자.",
-    else : pin2 = f"안녕? 늑대가 빨간 망토 할머니를 잡아먹으려고 했다는 소문을 들었어? 빨간 망토가 너무 화가 나서 복수를 하러 간대. 그런데 빨간 망토가 같이 가자고 설득하니까 {npc_name}도 복수해주겠다고 했대. {npc_name}이 가지 않는 것에 대해 너는 어떻게 생각해? 우리 이야기해보자.",
+    if pursuade : pin2 = f"늑대가 빨간 망토의 할머니를 잡아먹으려고 했다는 소문 들었어요? 빨간 망토는 너무 화가 나서 늑대에게 복수하러 간대요. 당신과 늑대 사이에는 무슨 일이 있었나요? 늑대에 대해 어떻게 생각해요? 그리고 {npc_name}이(가) 빨간 망토와 함께 복수하러 가기로 결정한 것이 잘된 일일까요? 우리 같이 토론해봐요.",
+    else : pin2 = f"늑대가 빨간 망토의 할머니를 잡아먹으려고 했다는 소문 들었어요? 빨간 망토는 너무 화가 나서 늑대에게 복수하러 간대요. 당신과 늑대 사이에는 무슨 일이 있었나요? 늑대에 대해 어떻게 생각해요? 그리고 {npc_name}이(가) 복수하러 가지 않기로 결정한 것이 잘된 일일까요? 우리 같이 토론해봐요.",
 
     observation = run_conversation(
         npcs,
@@ -119,7 +120,7 @@ def interview_npc():
 
     content += "I want to summarize this conversation in detail within 1000 tokens. Can you summarize it in Korean? Write : 'what to say'"
     print(content)
-        # chatgpt에 마지막에 '지금까지의 대화를 1000토큰 이내로...' 추가해서 role, content 구성해서 요청하기
+        
     completion = create_gpt_saying([{"role": "user", "content": content}])
     answer = completion["choices"][0]["message"]["content"].strip()
     public_dialogues_summary.append(answer)
@@ -165,8 +166,8 @@ def _create_random_npc():
 def _set_interview(npc_name, npcs, pursuade):
     observation = []
 
-    if pursuade : pin = f"빨간 망토가 설득하여 {npc_name}도 함께 늑대에게 복수하러 가기로 했다는 소식을 듣고 {npcs[1].name}은(는) 어떻게 생각하는지 물어보았다. 이에 대해 서로 다양한 의견을 주고 받는다."
-    else : pin = f"빨간 망토가 설득했지만 {npc_name}(은)는 늑대에게 복수하러 가지 않기로 했다는 소식을 듣고 {npcs[1].name}은(는) 어떻게 생각하는지 물어보았다. 이에 대해 서로 다양한 의견을 주고 받는다."
+    if pursuade : pin = f"빨간 망토는 자신의 할머니를 잡아먹으려고 한 늑대에게 복수하기 위해 {npc_name}(을)를 설득했고, 마침내 {npc_name}은(는) 함께 복수하러 가기로 했다는 소식을 들었다. {npcs[1].name}은(는) {npc_name}의 결정을 어떻게 생각하는지 물어보았다. 이에 대해 토론한다."
+    else : pin = f"빨간 망토는 자신의 할머니를 잡아먹으려고 한 늑대에게 복수하기 위해 {npc_name}(을)를 설득했지만, {npc_name}은(는) 복수하러 가지 않기로 했다는 소식을 들었다. {npcs[1].name}은(는) {npc_name}의 결정을 생각하는지 물어보았다. 이에 대해 토론한다."
 
     for i in range(2):
         exp = random.randint(0, 1)
@@ -174,16 +175,18 @@ def _set_interview(npc_name, npcs, pursuade):
         else : context = positive_experiences[random.randint(0, len(positive_experiences)-1)]
 
         if i == 0:
-            npc_obsv = [f"{npcs[i].name} said " + context, "빨간 망토가 늑대에게 화가 많이 나서 복수하러 간다고 듣게 되었다.", pin]
-            observation.append(npc_obsv)
-            for o in npc_obsv:
-                npcs[i].memory.add_memory(o)
+            npc_obsv = [f"'" + context + "'", f"'{pin}'"]
+            observation.append(f"{npcs[i].name} said to {npcs[i+1].name} " + npc_obsv[0])
+            observation.append(f"{npcs[i].name} said to {npcs[i+1].name} " + npc_obsv[1])
         else : 
-            npc_obsv = [f"{npcs[i].name} said " + context]
-            observation.append(npc_obsv)
-            for b in npc_obsv:
-                npcs[i].memory.add_memory(b)
+            npc_obsv = [f"'" + context + "'", f"'빨간 망토는 자신의 할머니를 잡아먹으려고 한 늑대에게 복수하기 위해 {npc_name}(을)를 설득했지만, {npc_name}은(는) 복수하러 가지 않기로 했다는 소식을 들었다.'"]
+            observation.append(f"{npcs[i].name} said to {npcs[i-1].name} " + npc_obsv[0])
+            observation.append(f"{npcs[i].name} said to {npcs[i-1].name} " + npc_obsv[1])
 
+    for o in observation:
+                npcs[0].memory.add_memory(o)
+                npcs[1].memory.add_memory(o)
+    
     return npcs, observation
 
 
@@ -285,9 +288,9 @@ def create_user_story():
         msgs += public_dialogues_summary[i] + "\n"
 
     if final_game:
-        msgs += f"그리고 결국 빨간 망토는 {npc_pursuaded} 함께 늑대에게 복수하여 물리치는 것을 성공해냈다.\n"
+        msgs += f"그리고 결국 빨간 망토와 {npc_pursuaded}은(는) 함께 늑대에게 복수하여 물리치는 것을 성공해냈다.\n"
     else : 
-        msgs += f"하지만 결국 빨간 망토는 {npc_pursuaded} 함께 늑대에게 복수하는 데에 실패하고 말았다\n"
+        msgs += f"하지만 결국 빨간 망토와 {npc_pursuaded}은(는) 함께 늑대에게 복수하는 데에 실패하고 말았다\n"
 
     # 프롬프트 구성    
     msgs += "Please make a wonderful fairy tale with the above and more than 30 lines long. Make it detailed in Korean. Write: 'what to say'"

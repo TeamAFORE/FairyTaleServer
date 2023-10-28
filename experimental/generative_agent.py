@@ -4,6 +4,7 @@ import re # 정규 표현식을 사용하기 위한 모듈
 from datetime import datetime # 날짜와 시간을 다루기 위한 모듈
 from typing import Any, Dict, List, Optional, Tuple # 타입 힌트를 위한 모듈. 다양한 데이터 유형
 
+import openai
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate # 대화 흐름의 템플릿화된 프롬프트를 생성하기 위해 사용
 from langchain.schema.language_model import BaseLanguageModel # 언어 모델의 기본 클래스로, 다양한 언어 모델의 공통 인터페이스를 정의
@@ -121,8 +122,8 @@ Relevant context:
     ) -> str:
 
         prompt = PromptTemplate.from_template(
-            "{agent_summary_description}"
-            + "\nIt is {current_time}."  # 지금은 {current_time}이다
+            "{agent_summary_description}" + 
+            "\nIt is {current_time}."  # 지금은 {current_time}이다
             + "\n{agent_name}'s status: {agent_status}"  # {agent_name}의 상태: {agent_status}
             + "\nSummary of relevant context from {agent_name}'s memory:"  # {agent_name}의 기억 속 관련 컨텍스트 요약
             + "\n{relevant_memories}"
@@ -151,6 +152,34 @@ Relevant context:
         )
         kwargs[self.memory.most_recent_memories_token_key] = consumed_tokens  # 특정 기억 토큰의 위치를 추적하고 기록
         return self.chain(prompt=prompt).run(**kwargs).strip()
+
+    def _generate_reaction_custom(self, observation: str, query_prompt: str, now: Optional[datetime] = None):
+        prompt = PromptTemplate.from_template(
+                "It is {current_time}."  # 지금은 {current_time}이다
+                + "\nObservation: {observation}"  # 관측: {observation}
+                + "\n\n"
+                + query_prompt
+            )
+        current_time_str = (
+            datetime.now().strftime("%B %d, %Y, %I:%M %p")  # 현재 월, 일, 연도, 12시간 형식 시간, 분, 오전/오후
+            #if now is None
+            #else now.strftime("%B %d, %Y, %I:%M %p")  # 주어진 시간 월, 일, 연도, 12시간 형식 시간, 분, 오전/오후
+        )
+        kwargs: Dict[str, Any] = dict(
+            current_time=current_time_str,
+            observation=observation,
+            agent_name=self.name
+        )
+        consumed_tokens = self.llm.get_num_tokens(  # 프롬프트 토큰 수
+            prompt.format(**kwargs)
+        )
+        kwargs[self.memory.most_recent_memories_token_key] = consumed_tokens  # 특정 기억 토큰의 위치를 추적하고 기록
+         
+        try:
+            return self.chain(prompt=prompt).run(**kwargs).strip()
+        except openai.error.OpenAIError as e:
+            print("error : maximum token 오류 발생!")
+            pass
 
     # 텍스트 특정 패턴 제거
     def _clean_response(self, text: str) -> str:
@@ -195,13 +224,19 @@ Relevant context:
     def generate_dialogue_response(
             self, observation: str, now: Optional[datetime] = None
     ) -> Tuple[bool, str]:
-
+        """
         call_to_action_template = (
             "What would {agent_name} say? To end the conversation, write:"
             ' GOODBYE: "what to say". Otherwise to continue the conversation,'
-            ' write in Korean: SAY: "what to say next"\n\n'
+            ' write in Korean without translation: SAY: "what to say next"\n\n'
         )
-        full_result = self._generate_reaction(
+        """
+        call_to_action_template = (
+            "What would {agent_name} say? To continue the conversation, write in Korean without translation:"
+            ' SAY: "what to say next"\n\n'
+        )
+
+        full_result = self._generate_reaction_custom(
             observation, call_to_action_template, now=now
         )
         result = full_result.strip().split("\n")[0]

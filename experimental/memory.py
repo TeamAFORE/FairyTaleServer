@@ -100,7 +100,7 @@ class GenerativeAgentMemory(BaseMemory):
             "Do not include any insights that are not relevant to the question.\n"  # 질문과 관련없는 통찰력은 포함하지 말 것
             "Do not repeat any insights that have already been made.\n\n"  # 이미 언급된 통찰력을 중복하여 포함하지 말 
             "Question: {topic}\n\n"
-            "(example format: insight (because of 1, 5, 3))\n"  # 통챨력이 어떤 기억들에 기반하여 도출되었는지 번호 리스트 반
+            "(example format: insight (because of 1, 5, 3))\n"  # 통찰력이 어떤 기억들에 기반하여 도출되었는지 번호 리스트 반
         )
 
         related_memories = self.fetch_memories(topic, now=now)
@@ -221,7 +221,7 @@ class GenerativeAgentMemory(BaseMemory):
             self, memory_content: str, now: Optional[datetime] = None
     ) -> List[str]:
 
-        importance_score = self._score_memory_importance(memory_content)  # 중요성 점수 계산
+        importance_score = 10.0 #고민정 self._score_memory_importance(memory_content)  # 중요성 점수 계산
         self.aggregate_importance += importance_score  # 최근 기억들의 중요성 누적. 임계값 treshold초과 시 반영(reflect) 작업 수행하기 위해 사용
         document = Document(
             page_content=memory_content, metadata={"importance": importance_score}  # Document 객체에 기억과 중요성 점수 저
@@ -234,7 +234,7 @@ class GenerativeAgentMemory(BaseMemory):
                 and not self.reflecting
         ):
             self.reflecting = True
-            self.pause_to_reflect(now=now)
+            #고민정 self.pause_to_reflect(now=now)
             # Hack to clear the importance from reflection
             self.aggregate_importance = 0.0
             self.reflecting = False
